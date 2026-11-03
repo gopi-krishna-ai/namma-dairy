@@ -1,0 +1,166 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  phone         String?
+  password      String
+  role          String         @default("CUSTOMER") // CUSTOMER or ADMIN
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  notifications Notification[]
+  cartItems     CartItem[]
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  tag           String   @default("Home") // Home, Work, Other
+  recipientName String
+  phone         String
+  houseNumber   String
+  street        String
+  area          String
+  city          String   @default("Bengaluru")
+  pincode       String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?
+  image       String?
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+}
+
+model Product {
+  id                 String      @id @default(cuid())
+  name               String
+  slug               String      @unique
+  description        String
+  categoryId         String
+  image              String
+  badge              String?
+  basePrice          Float
+  unit               String      @default("kg") // kg, litre, unit, pack
+  stockQuantity      Float       @default(50)
+  isAvailable        Boolean     @default(true)
+  isFeatured         Boolean     @default(false)
+  optionsJson        String?     // e.g. ["250g", "500g", "1kg"] or ["500ml", "1L"]
+  cuttingOptionsJson String?     // e.g. ["Curry Cut (Skinless)", "Boneless Cubes"]
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  category           Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cartItems          CartItem[]
+  orderItems         OrderItem[]
+}
+
+model CartItem {
+  id             String   @id @default(cuid())
+  userId         String
+  productId      String
+  quantity       Int      @default(1)
+  selectedWeight String?
+  selectedCut    String?
+  itemPrice      Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  userId            String
+  status            String      @default("PLACED") // PLACED, CONFIRMED, PREPARING, DISPATCHED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  paymentMethod     String      @default("COD") // COD, RAZORPAY
+  paymentStatus     String      @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  subtotal          Float
+  deliveryFee       Float       @default(0)
+  discount          Float       @default(0)
+  totalAmount       Float
+  deliveryAddress   String      // JSON string of address snapshot
+  deliverySlot      String
+  deliveryDate      String
+  orderNotes        String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items             OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String?
+  productName    String
+  productImage   String?
+  unit           String
+  selectedWeight String?
+  selectedCut    String?
+  unitPrice      Float
+  quantity       Int
+  totalPrice     Float
+  createdAt      DateTime @default(now())
+
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("ORDER_STATUS") // ORDER_STATUS, PAYMENT, PROMOTION
+  orderId   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StoreSetting {
+  id                    String  @id @default("default")
+  storeName             String  @default("Namma Dairy")
+  tagline               String  @default("Pure Milk • Healthy Life")
+  location              String  @default("Bengaluru, Karnataka")
+  phone                 String  @default("+91 98765 43210")
+  email                 String  @default("contact@nammadairy.com")
+  minOrderValue         Float   @default(199)
+  deliveryFee           Float   @default(35)
+  freeDeliveryThreshold Float   @default(499)
+  isStoreOpen           Boolean @default(true)
+  isCodEnabled          Boolean @default(true)
+  isRazorpayEnabled     Boolean @default(true)
+  deliverySlotsJson     String  @default("[\"Morning 6:00 AM - 8:00 AM\", \"Morning 8:30 AM - 11:30 AM\", \"Evening 4:00 PM - 7:00 PM\", \"Express Delivery (Within 60 Mins)\"]")
+  updatedAt             DateTime @updatedAt
+}

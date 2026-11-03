@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-gray-800 antialiased font-sans selection:bg-brand-600 selection:text-white;
+    background-color: #fbf8f1;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(6, 78, 59, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(22, 163, 74, 0.12);
+}
+
+.glass-panel-dark {
+  background: rgba(6, 78, 59, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+/* Subtle organic card shadow */
+.card-organic {
+  box-shadow: 0 10px 30px -5px rgba(6, 78, 59, 0.07), 0 4px 6px -2px rgba(6, 78, 59, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-organic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 35px -8px rgba(6, 78, 59, 0.13), 0 8px 10px -3px rgba(6, 78, 59, 0.05);
+}
+
+/* Leaf watermark pattern */
+.bg-leaf-pattern {
+  background-image: radial-gradient(#15803d 0.75px, transparent 0.75px), radial-gradient(#15803d 0.75px, #fbf8f1 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  opacity: 0.04;
+}
+
+/* Hide scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth keyframes */
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
