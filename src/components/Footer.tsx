@@ -157,7 +157,7 @@ export default function Footer() {
             <ul className="space-y-3 text-xs text-emerald-200">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Namma Dairy Farm Hub, Old Madras Road, Indiranagar, Bengaluru, Karnataka - 560038</span>
+                <span>Pure Picks Farm Hub, Old Madras Road, Indiranagar, Bengaluru, Karnataka - 560038</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -165,7 +165,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>care@nammadairy.com</span>
+                <span>care@purepicks.com</span>
               </li>
             </ul>
           </div>
@@ -173,7 +173,7 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="mt-12 pt-6 border-t border-emerald-800/80 text-center text-xs text-emerald-300 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Namma Dairy Bengaluru. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Pure Picks Bengaluru. All rights reserved.</p>
           <div className="flex items-center gap-4 text-[11px] text-emerald-400">
             <span>Pure Milk Direct From Nature • Cold-Chain Vacuum Packed</span>
             <span>•</span>

@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const statusNotifications: Record<string, { title: string; msg: string }> = {
       CONFIRMED: {
         title: `Order Confirmed: #${order.orderNumber} ✅`,
-        msg: `Your order has been verified and confirmed by Namma Dairy! We are selecting the freshest cuts for you.`,
+        msg: `Your order has been verified and confirmed by Pure Picks! We are selecting the freshest cuts for you.`,
       },
       PREPARING: {
         title: `Order in Kitchen: #${order.orderNumber} 🔪`,
@@ -130,7 +130,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
       DELIVERED: {
         title: `Order Delivered: #${order.orderNumber} 🏡`,
-        msg: `Your Namma Dairy order has been delivered! Enjoy your fresh milk and farm cuts. Thank you for shopping local!`,
+        msg: `Your Pure Picks order has been delivered! Enjoy your fresh milk and farm cuts. Thank you for shopping local!`,
       },
       CANCELLED: {
         title: `Order Cancelled: #${order.orderNumber} ⚠️`,

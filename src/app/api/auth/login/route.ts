@@ -23,6 +23,13 @@ export async function POST(req: NextRequest) {
       where: { email: cleanEmail },
     });
 
+    // Fallback alias for rebranded Pure Picks admin email
+    if (!user && cleanEmail === 'admin@purepicks.com') {
+      user = await prisma.user.findUnique({
+        where: { email: 'admin@nammadairy.com' },
+      });
+    }
+
     // 2. If not found by email, try finding by phone number
     if (!user && cleanPhoneDigits.length >= 10) {
       const allUsers = await prisma.user.findMany({

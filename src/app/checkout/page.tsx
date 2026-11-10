@@ -689,7 +689,7 @@ export default function CheckoutPage() {
                 </button>
 
                 <p className="text-[11px] text-center text-gray-500 mt-3">
-                  By placing your order, you agree to Namma Dairy&apos;s fresh farm delivery terms in Bengaluru.
+                  By placing your order, you agree to Pure Picks&apos;s fresh farm delivery terms in Bengaluru.
                 </p>
               </div>
             </div>
@@ -857,10 +857,10 @@ export default function CheckoutPage() {
             <div className="bg-[#0c2340] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center font-bold text-lg text-emerald-400">
-                  ND
+                  PP
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm">Namma Dairy Checkout</h4>
+                  <h4 className="font-bold text-sm">Pure Picks Checkout</h4>
                   <p className="text-[11px] text-gray-300">Bengaluru • Pure Milk &amp; Meat Delivery</p>
                 </div>
               </div>

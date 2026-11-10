@@ -69,7 +69,7 @@ export default function NammaLogo({ className = '', size = 'md', white = false }
           <span className={`font-display font-extrabold tracking-tight leading-none ${textSizes[size]} ${
             white ? 'text-white' : 'text-brand-900'
           }`}>
-            NAMMA <span className="text-brand-600">DAIRY</span>
+            PURE <span className="text-brand-600">PICKS</span>
           </span>
           {/* Fresh Leaf Icon */}
           <span className="text-brand-500 text-sm animate-pulse">🍃</span>

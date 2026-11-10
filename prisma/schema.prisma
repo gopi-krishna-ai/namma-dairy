@@ -150,11 +150,11 @@ model Notification {
 
 model StoreSetting {
   id                    String  @id @default("default")
-  storeName             String  @default("Namma Dairy")
+  storeName             String  @default("Pure Picks")
   tagline               String  @default("Pure Milk • Healthy Life")
   location              String  @default("Bengaluru, Karnataka")
   phone                 String  @default("+91 98765 43210")
-  email                 String  @default("contact@nammadairy.com")
+  email                 String  @default("contact@purepicks.com")
   minOrderValue         Float   @default(199)
   deliveryFee           Float   @default(35)
   freeDeliveryThreshold Float   @default(499)

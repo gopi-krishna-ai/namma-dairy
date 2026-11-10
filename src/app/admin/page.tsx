@@ -443,7 +443,7 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${name}" from Namma Dairy catalog?`)) return;
+    if (!confirm(`Are you sure you want to permanently delete "${name}" from Pure Picks catalog?`)) return;
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       const data = await res.json();
@@ -645,11 +645,11 @@ export default function AdminDashboardPage() {
       <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-md">
-            ND
+            PP
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-black text-base tracking-wide text-white">NAMMA DAIRY</h1>
+              <h1 className="font-black text-base tracking-wide text-white">PURE PICKS</h1>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
                 Staff Admin Portal
               </span>
@@ -1593,7 +1593,7 @@ export default function AdminDashboardPage() {
         {activeTab === 'SETTINGS' && settings && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
             <div>
-              <h3 className="font-bold text-white text-base">Namma Dairy Store Configuration</h3>
+              <h3 className="font-bold text-white text-base">Pure Picks Store Configuration</h3>
               <p className="text-xs text-slate-400">Delivery fees, minimum order rules, and payment toggles</p>
             </div>
 

@@ -265,7 +265,7 @@ export default function CustomerAccountPage() {
               <div>
                 <p className="text-xs font-bold">You are authenticated as Store Administrator</p>
                 <p className="text-[11px] text-emerald-200">
-                  Switch to the Namma Dairy management portal to process orders, edit stock, and adjust pricing.
+                  Switch to the Pure Picks management portal to process orders, edit stock, and adjust pricing.
                 </p>
               </div>
             </div>

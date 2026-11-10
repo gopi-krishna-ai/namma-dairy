@@ -52,17 +52,17 @@ export default async function HomePage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=1920&q=80"
-            alt="Namma Dairy Fresh Cow in Green Pasture"
+            alt="Pure Picks Fresh Cow in Green Pasture"
             fill
             priority
             className="object-cover object-[75%_center] lg:object-[80%_center] filter saturate-[1.1]"
             unoptimized
           />
-          {/* Subtle artistic watermark of Namma Dairy emblem in background */}
+          {/* Subtle artistic watermark of Pure Picks emblem in background */}
           <div className="absolute right-8 top-1/2 -translate-y-1/2 w-80 h-80 opacity-15 pointer-events-none rounded-full overflow-hidden blur-[0.5px] hidden xl:block">
             <Image
               src="/namma-dairy-brand.jpg"
-              alt="Namma Dairy Emblem"
+              alt="Pure Picks Emblem"
               fill
               className="object-cover object-left mix-blend-overlay"
             />
@@ -106,7 +106,7 @@ export default async function HomePage() {
 
               {/* Tagline & Subtitle */}
               <p className="text-base sm:text-lg text-emerald-100/90 max-w-2xl leading-relaxed drop-shadow-sm font-normal">
-                <strong className="text-white font-bold">Namma Dairy</strong> brings purity from Karnataka farms directly to your dining table. 100% pure raw unadulterated cow milk, antibiotic-free chicken cuts, tender pasture-fed goat mutton, and dawn-harvested fresh vegetables.
+                <strong className="text-white font-bold">Pure Picks</strong> brings purity from Karnataka farms directly to your dining table. 100% pure raw unadulterated cow milk, antibiotic-free chicken cuts, tender pasture-fed goat mutton, and dawn-harvested fresh vegetables.
               </p>
 
               {/* CTA Buttons */}
@@ -350,7 +350,7 @@ export default async function HomePage() {
               From Rural Karnataka Pastures To Your Home
             </span>
             <h2 className="font-display font-black text-2xl sm:text-4xl text-white leading-tight">
-              Why Namma Dairy is Pure, Natural &amp; Unadulterated
+              Why Pure Picks is Pure, Natural &amp; Unadulterated
             </h2>
             <p className="text-sm text-emerald-100/90 leading-relaxed">
               Every drop of milk and cut of meat follows a rigorous farm-to-table hygiene protocol under refrigerated cold-chains.
@@ -414,7 +414,7 @@ export default async function HomePage() {
                 Fresh Cuts Prepared to Your Exact Recipe Needs
               </h2>
               <p className="text-sm text-gray-300 leading-relaxed max-w-xl">
-                Unlike frozen market meats, Namma Dairy butchers fresh pasture-fed goats and antibiotic-free chicken only upon order. Choose your customized cut on every product card:
+                Unlike frozen market meats, Pure Picks butchers fresh pasture-fed goats and antibiotic-free chicken only upon order. Choose your customized cut on every product card:
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">

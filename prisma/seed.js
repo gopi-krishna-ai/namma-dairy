@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding Namma Dairy Database...');
+  console.log('Seeding Pure Picks Database...');
 
   // 1. Clean existing records
   await prisma.notification.deleteMany({});
@@ -24,8 +24,8 @@ async function main() {
   // 3. Create Users
   const admin = await prisma.user.create({
     data: {
-      name: 'Namma Dairy Admin',
-      email: 'admin@nammadairy.com',
+      name: 'Pure Picks Admin',
+      email: 'admin@purepicks.com',
       phone: '+91 98765 43210',
       password: adminPassword,
       role: 'ADMIN',
@@ -453,11 +453,11 @@ async function main() {
   await prisma.storeSetting.create({
     data: {
       id: 'default',
-      storeName: 'Namma Dairy',
+      storeName: 'Pure Picks',
       tagline: 'Pure Milk • Healthy Life',
       location: 'Bengaluru, Karnataka',
       phone: '+91 98765 43210',
-      email: 'care@nammadairy.com',
+      email: 'care@purepicks.com',
       minOrderValue: 199.0,
       deliveryFee: 35.0,
       freeDeliveryThreshold: 499.0,
@@ -543,14 +543,14 @@ async function main() {
       {
         userId: customer.id,
         title: 'Order Confirmed ✅',
-        message: 'Namma Dairy has received your morning order #ND-2026-7842. Preparing your fresh cuts & pure milk.',
+        message: 'Pure Picks has received your morning order #ND-2026-7842. Preparing your fresh cuts & pure milk.',
         type: 'ORDER_STATUS',
         orderId: order1.id,
         isRead: true,
       },
       {
         userId: customer.id,
-        title: 'Welcome to Namma Dairy! 🥛',
+        title: 'Welcome to Pure Picks! 🥛',
         message: 'Enjoy ₹50 OFF on your first fresh grocery order using code NAMMA50 at checkout.',
         type: 'PROMOTION',
         isRead: true,

@@ -56,9 +56,9 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
             <div>
               <NammaLogo size="md" />
               <p className="text-xs text-gray-500 mt-2 max-w-xs leading-relaxed">
-                Namma Dairy Farm Hub, Old Madras Road, Indiranagar, Bengaluru, Karnataka - 560038
+                Pure Picks Farm Hub, Old Madras Road, Indiranagar, Bengaluru, Karnataka - 560038
                 <br />
-                Helpline: +91 98765 43210 • care@nammadairy.com
+                Helpline: +91 98765 43210 • care@purepicks.com
                 <br />
                 FSSAI Lic. No: 11223334000123
               </p>
@@ -152,8 +152,8 @@ export default function InvoiceModal({ order, onClose }: InvoiceModalProps) {
 
           {/* Footer note */}
           <div className="mt-8 pt-4 border-t border-dashed border-gray-200 text-center text-[10px] text-gray-400 space-y-1">
-            <p>Thank you for choosing Namma Dairy! We guarantee 100% pure milk and farm-fresh butchery.</p>
-            <p>For any quality or delivery queries, contact +91 98765 43210 or care@nammadairy.com.</p>
+            <p>Thank you for choosing Pure Picks! We guarantee 100% pure milk and farm-fresh butchery.</p>
+            <p>For any quality or delivery queries, contact +91 98765 43210 or care@purepicks.com.</p>
           </div>
         </div>
       </div>

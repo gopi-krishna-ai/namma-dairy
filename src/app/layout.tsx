@@ -8,11 +8,11 @@ import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
 
 export const metadata: Metadata = {
-  title: 'Namma Dairy - Pure Milk • Healthy Life | Fresh Meat, Chicken & Vegetables Bengaluru',
+  title: 'Pure Picks - Pure Milk • Healthy Life | Fresh Meat, Chicken & Vegetables Bengaluru',
   description:
     'Order 100% farm fresh unadulterated milk, grass-fed A2 cow milk, antibiotic-free chicken, tender goat mutton, and organic vegetables delivered to your doorstep in Bengaluru, Karnataka.',
   keywords: [
-    'Namma Dairy',
+    'Pure Picks',
     'Pure Milk Bengaluru',
     'Fresh Chicken Delivery Bengaluru',
     'Tender Mutton Bengaluru',

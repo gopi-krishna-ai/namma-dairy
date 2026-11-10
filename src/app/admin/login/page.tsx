@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
             <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Namma Dairy Staff Portal
+            Pure Picks Staff Portal
           </h1>
           <p className="text-xs text-emerald-200/80 mt-1">
             Store Management, Order Fulfillment &amp; Catalog Hub
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
                   autoCorrect="off"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@nammadairy.com"
+                  placeholder="admin@purepicks.com"
                   className="w-full pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-medium bg-gray-50/40 focus:bg-white transition"
                 />
               </div>

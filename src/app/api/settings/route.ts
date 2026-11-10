@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
       },
       create: {
         id: 'default',
-        storeName: data.storeName || 'Namma Dairy',
+        storeName: data.storeName || 'Pure Picks',
         tagline: data.tagline || 'Pure Milk • Healthy Life',
         location: data.location || 'Bengaluru, Karnataka',
         phone: data.phone || '+91 98765 43210',

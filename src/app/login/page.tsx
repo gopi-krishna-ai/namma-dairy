@@ -440,7 +440,7 @@ function LoginFormContent() {
             className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg hover:bg-emerald-50 transition"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Namma Dairy Staff Manager? Admin Sign In &rarr;</span>
+            <span>Pure Picks Staff Manager? Admin Sign In &rarr;</span>
           </Link>
         </div>
       </div>

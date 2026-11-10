@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: newUser.id,
-        title: 'Welcome to Namma Dairy! 🥛',
+        title: 'Welcome to Pure Picks! 🥛',
         message: 'Your account is ready. Order 100% farm fresh milk, free-range chicken, tender mutton, and fresh vegetables delivered to your doorstep in Bengaluru!',
         type: 'PROMOTION',
       },
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      message: 'Registration successful! Welcome to Namma Dairy.',
+      message: 'Registration successful! Welcome to Pure Picks.',
       user: {
         id: newUser.id,
         name: newUser.name,

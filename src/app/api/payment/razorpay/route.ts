@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const { action, amount, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
-    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_NammaDairy2026';
+    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_PurePicks2026';
     const keySecret = process.env.RAZORPAY_KEY_SECRET || 'mock_secret_key_for_local_dev';
 
     // 1. Create Razorpay Order
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         amount: orderAmountInPaise,
         currency: 'INR',
         keyId,
-        businessName: 'Namma Dairy Bengaluru',
+        businessName: 'Pure Picks Bengaluru',
         description: 'Fresh Milk, Meat & Veg Delivery',
       });
     }
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         success: true,
         verified: true,
         paymentId: razorpay_payment_id || `pay_${Date.now()}`,
-        message: 'Payment verified successfully on Namma Dairy secure gateway!',
+        message: 'Payment verified successfully on Pure Picks secure gateway!',
       });
     }
 
