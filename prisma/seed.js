@@ -17,8 +17,13 @@ async function main() {
   await prisma.user.deleteMany({});
   await prisma.storeSetting.deleteMany({});
 
-  // 2. Hash passwords
-  const adminPassword = await bcrypt.hash('admin123', 10);
+  // 2. Hash passwords with secure administrator setup configuration
+  const initialAdminPass = process.env.INITIAL_ADMIN_PASSWORD;
+  if (!initialAdminPass && process.env.NODE_ENV === 'production') {
+    throw new Error('SECURITY ERROR: INITIAL_ADMIN_PASSWORD environment variable is required during production seeding.');
+  }
+  const adminPasswordToUse = initialAdminPass || 'PurePicks@AdminSecure2026!';
+  const adminPassword = await bcrypt.hash(adminPasswordToUse, 12);
   const customerPassword = await bcrypt.hash('customer123', 10);
 
   // 3. Create Users

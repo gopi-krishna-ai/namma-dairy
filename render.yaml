@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: namma-dairy
+    name: pure-picks
     runtime: node
     plan: free
     region: singapore
@@ -10,9 +10,9 @@ services:
       - key: DATABASE_URL
         value: "file:./dev.db"
       - key: JWT_SECRET
-        value: "namma-dairy-jwt-super-secret-key-bengaluru-2026"
+        value: "pure-picks-jwt-super-secret-key-bengaluru-2026"
       - key: NEXT_PUBLIC_APP_NAME
-        value: "Namma Dairy"
+        value: "Pure Picks"
       - key: NEXT_PUBLIC_APP_TAGLINE
         value: "Pure Milk • Healthy Life"
       - key: NEXT_PUBLIC_LOCATION

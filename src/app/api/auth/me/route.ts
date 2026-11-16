@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, user: null }, { status: 401 });
     }
-    return NextResponse.json({ success: true, user });
+    const { tokenVersion, ...safeUser } = user;
+    return NextResponse.json({ success: true, user: safeUser });
   } catch (error) {
     return NextResponse.json({ success: false, user: null }, { status: 500 });
   }

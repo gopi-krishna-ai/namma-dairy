@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/lib/types';
 import { useCart } from '@/context/CartContext';
+import { calculateWeightMultiplier, calculateItemUnitPrice } from '@/lib/pricing';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -105,14 +106,8 @@ export default function ProductDetailPage() {
   } catch (e) {}
 
   // Multiplier calculation
-  let multiplier = 1.0;
-  const w = selectedWeight.toLowerCase();
-  if (w.includes('250g') || w.includes('200g')) multiplier = 0.25;
-  else if (w.includes('500g') || w.includes('500ml')) multiplier = 0.5;
-  else if (w.includes('2 kg') || w.includes('2 litres')) multiplier = 2.0;
-  else if (w.includes('5 kg')) multiplier = 5.0;
-
-  const currentUnitPrice = Math.round(product.basePrice * multiplier * 100) / 100;
+  const multiplier = calculateWeightMultiplier(selectedWeight, product.unit, product.optionsJson);
+  const currentUnitPrice = calculateItemUnitPrice(product.basePrice, selectedWeight, product.unit, product.optionsJson);
   const currentTotalPrice = Math.round(currentUnitPrice * quantity * 100) / 100;
 
   const handleAddToCart = () => {

@@ -68,21 +68,16 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Simulated Razorpay Modal
-  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
-  const [razorpayMethod, setRazorpayMethod] = useState<'UPI' | 'CARD' | 'NETBANKING'>('UPI');
-  const [upiId, setUpiId] = useState('user@okhdfcbank');
-  const [cardNumber, setCardNumber] = useState('4532 •••• •••• 8892');
-  const [isProcessingRazorpay, setIsProcessingRazorpay] = useState(false);
-
-  // Fetch customer saved addresses
+  // Authenticate & Fetch customer saved addresses
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?redirect=/checkout');
+    } else if (isAuthenticated) {
       fetchAddresses();
     } else {
       setIsLoadingAddresses(false);
     }
-  }, [isAuthenticated]);
+  }, [authLoading, isAuthenticated, router]);
 
   const fetchAddresses = async () => {
     try {
@@ -177,6 +172,7 @@ export default function CheckoutPage() {
         couponCode: appliedCoupon?.code,
         razorpayPaymentId: razorpayPaymentDetails?.razorpay_payment_id || null,
         razorpayOrderId: razorpayPaymentDetails?.razorpay_order_id || null,
+        razorpaySignature: razorpayPaymentDetails?.razorpay_signature || null,
       };
 
       const res = await fetch('/api/orders', {
@@ -200,8 +196,23 @@ export default function CheckoutPage() {
     }
   };
 
+  // Helper to load official Razorpay SDK script dynamically
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   // Trigger Online Payment or COD
-  const handleSubmitCheckout = () => {
+  const handleSubmitCheckout = async () => {
     if (!isAuthenticated) {
       router.push(`/login?redirect=/checkout`);
       return;
@@ -212,26 +223,109 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMethod === 'RAZORPAY') {
-      setShowRazorpayModal(true);
-    } else {
-      handlePlaceOrder();
+    if (items.length === 0) {
+      setErrorMessage('Your basket is empty. Please add items before placing order.');
+      return;
     }
-  };
 
-  // Complete simulated Razorpay flow
-  const handleSimulateRazorpaySuccess = async () => {
-    setIsProcessingRazorpay(true);
-    setTimeout(async () => {
-      const fakePaymentId = `pay_${Math.random().toString(36).substring(2, 12).toUpperCase()}`;
-      const fakeOrderId = `order_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-      setShowRazorpayModal(false);
-      setIsProcessingRazorpay(false);
-      await handlePlaceOrder({
-        razorpay_payment_id: fakePaymentId,
-        razorpay_order_id: fakeOrderId,
+    if (subtotal < minOrderValue && total < minOrderValue) {
+      setErrorMessage(`Minimum order value is ₹${minOrderValue}. Please add more items.`);
+      return;
+    }
+
+    const selectedAddr = addresses.find((a) => a.id === selectedAddressId);
+    if (!selectedAddr) {
+      setErrorMessage('Please select or add a Bengaluru delivery address.');
+      return;
+    }
+
+    // Cash On Delivery Flow
+    if (paymentMethod === 'COD') {
+      await handlePlaceOrder();
+      return;
+    }
+
+    // Genuine Razorpay Payment Flow
+    setErrorMessage('');
+    setIsSubmitting(true);
+
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error(
+          'Razorpay checkout SDK could not be loaded. Please check your network connection or choose Cash on Delivery.'
+        );
+      }
+
+      // Step 1: Create authentic server-side order with strictly server-computed price
+      const createOrderRes = await fetch('/api/payment/razorpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_order',
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            selectedWeight: item.selectedWeight,
+            selectedCut: item.selectedCut,
+          })),
+          couponCode: appliedCoupon?.code,
+        }),
       });
-    }, 1500);
+
+      const orderData = await createOrderRes.json();
+
+      if (!createOrderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || 'Failed to initialize payment gateway.');
+      }
+
+      // Step 2: Open official Razorpay Checkout modal
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: orderData.businessName || 'Pure Picks Bengaluru',
+        description: orderData.description || 'Farm Fresh Milk, Meat & Veg Delivery',
+        order_id: orderData.orderId,
+        handler: async function (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) {
+          // Cryptographic handshake: verify signature and persist order on backend
+          await handlePlaceOrder({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+        },
+        prefill: {
+          name: selectedAddr.recipientName || user?.name || '',
+          email: user?.email || '',
+          contact: selectedAddr.phone || user?.phone || '',
+        },
+        theme: {
+          color: '#047857',
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+          },
+        },
+      };
+
+      const rzpInstance = new (window as any).Razorpay(options);
+      rzpInstance.on('payment.failed', function (resp: any) {
+        setIsSubmitting(false);
+        setErrorMessage(
+          resp.error?.description || 'Payment was declined or failed. You may retry or choose Cash on Delivery.'
+        );
+      });
+      rzpInstance.open();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Payment initiation failed.');
+      setIsSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
@@ -845,153 +939,6 @@ export default function CheckoutPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Simulated Razorpay Payment Gateway Modal */}
-      {showRazorpayModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-blue-200">
-            {/* Razorpay Header */}
-            <div className="bg-[#0c2340] text-white p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center font-bold text-lg text-emerald-400">
-                  PP
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">Pure Picks Checkout</h4>
-                  <p className="text-[11px] text-gray-300">Bengaluru • Pure Milk &amp; Meat Delivery</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-gray-300 block">Payable</span>
-                <span className="text-lg font-bold font-mono text-emerald-400">₹{total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Gateway Body */}
-            <div className="p-5 space-y-4">
-              <div className="flex gap-2 border-b border-gray-200 pb-3 text-xs">
-                {(['UPI', 'CARD', 'NETBANKING'] as const).map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => setRazorpayMethod(method)}
-                    className={`flex-1 py-1.5 font-bold rounded-lg ${
-                      razorpayMethod === method
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-
-              {razorpayMethod === 'UPI' && (
-                <div className="space-y-3">
-                  <p className="text-xs text-gray-600">Enter UPI ID (Google Pay, PhonePe, Paytm, BHIM):</p>
-                  <input
-                    type="text"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 font-mono"
-                    placeholder="mobile@upi"
-                  />
-                  <div className="flex gap-2">
-                    {['GPay', 'PhonePe', 'Paytm', 'BHIM'].map((app) => (
-                      <span
-                        key={app}
-                        onClick={() => setUpiId(`user@${app.toLowerCase()}`)}
-                        className="cursor-pointer text-[10px] font-bold px-2 py-1 bg-gray-100 hover:bg-blue-50 text-gray-700 rounded border"
-                      >
-                        {app}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {razorpayMethod === 'CARD' && (
-                <div className="space-y-2.5 text-xs">
-                  <div>
-                    <label className="block text-[11px] text-gray-600 mb-1">Card Number</label>
-                    <input
-                      type="text"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 font-mono"
-                      placeholder="4532 0000 0000 0000"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] text-gray-600 mb-1">Valid Thru</label>
-                      <input
-                        type="text"
-                        defaultValue="08/28"
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 font-mono"
-                        placeholder="MM/YY"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] text-gray-600 mb-1">CVV</label>
-                      <input
-                        type="password"
-                        defaultValue="889"
-                        maxLength={3}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 font-mono"
-                        placeholder="•••"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {razorpayMethod === 'NETBANKING' && (
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak', 'Canara Bank'].map((bank) => (
-                    <div
-                      key={bank}
-                      className="p-2 border rounded-lg text-center font-medium hover:border-blue-500 hover:bg-blue-50 cursor-pointer"
-                    >
-                      {bank}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  disabled={isProcessingRazorpay}
-                  onClick={handleSimulateRazorpaySuccess}
-                  className="w-full py-3 bg-[#0c2340] text-white text-xs font-bold rounded-xl hover:bg-[#14325a] flex items-center justify-center gap-2 shadow"
-                >
-                  {isProcessingRazorpay ? (
-                    'Contacting Bank & Verifying...'
-                  ) : (
-                    <>
-                      Pay ₹{total.toFixed(2)} Securely
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowRazorpayModal(false)}
-                  className="w-full mt-2 py-1.5 text-[11px] text-gray-500 hover:text-gray-700"
-                >
-                  Cancel and choose another method
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 px-5 py-2.5 text-center text-[10px] text-gray-400 border-t flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              Secured by Razorpay • PCI-DSS Level 1 Certified
-            </div>
           </div>
         </div>
       )}

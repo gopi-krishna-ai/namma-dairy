@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, CartItem } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
+import { calculateWeightMultiplier, calculateItemUnitPrice } from '@/lib/pricing';
 
 interface CartContextType {
   items: CartItem[];
@@ -31,14 +32,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function calculateMultiplier(weightStr?: string | null): number {
-  if (!weightStr) return 1.0;
-  const w = weightStr.toLowerCase();
-  if (w.includes('250g') || w.includes('200g')) return 0.25;
-  if (w.includes('500g') || w.includes('500ml')) return 0.5;
-  if (w.includes('2 kg') || w.includes('2 litres')) return 2.0;
-  if (w.includes('5 kg')) return 5.0;
-  return 1.0;
+export function calculateMultiplier(
+  weightStr?: string | null,
+  productUnit?: string | null,
+  optionsJson?: string | null
+): number {
+  return calculateWeightMultiplier(weightStr, productUnit, optionsJson);
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -133,8 +132,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    const mult = calculateMultiplier(chosenWeight);
-    const calculatedUnitPrice = Math.round(product.basePrice * mult * 100) / 100;
+    const mult = calculateMultiplier(chosenWeight, product.unit, product.optionsJson);
+    const calculatedUnitPrice = calculateItemUnitPrice(product.basePrice, chosenWeight, product.unit, product.optionsJson);
 
     // Unique key for item with selected options
     const uniqueId = `${product.id}-${chosenWeight}-${chosenCut || 'none'}`;

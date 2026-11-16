@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { requireAuth } from '@/lib/auth';
+import {
+  getRazorpayClient,
+  isRazorpayConfigured,
+  calculateServerOrderPricing,
+  verifyRazorpayPaymentSignature,
+} from '@/lib/razorpay';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -9,46 +15,162 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { action, amount, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { action, items, couponCode, razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
-    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_PurePicks2026';
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || 'mock_secret_key_for_local_dev';
-
-    // 1. Create Razorpay Order
+    // =========================================================================
+    // ACTION 1: Create Razorpay Order via Official Server-Side Orders API
+    // =========================================================================
     if (action === 'create_order') {
-      const orderAmountInPaise = Math.round(parseFloat(amount) * 100);
-      const generatedOrderId = `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      if (!isRazorpayConfigured()) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Razorpay payment gateway is not configured on the server. Please select Cash on Delivery (COD) or contact administrator.',
+          },
+          { status: 503 }
+        );
+      }
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return NextResponse.json(
+          { success: false, message: 'Cart items are required to compute order amount.' },
+          { status: 400 }
+        );
+      }
+
+      // Requirement 2 & 3: Create payment order using server-calculated amount. Never trust client amount!
+      let pricing;
+      try {
+        pricing = await calculateServerOrderPricing(items, couponCode);
+      } catch (err: any) {
+        return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+      }
+
+      const razorpay = getRazorpayClient();
+      const receipt = `rcpt_${auth.user.id.slice(-6)}_${Date.now()}`;
+
+      // Call official Razorpay Orders API
+      const rzpOrder = await razorpay.orders.create({
+        amount: pricing.amountInPaise,
+        currency: 'INR',
+        receipt,
+        notes: {
+          userId: auth.user.id,
+          userEmail: auth.user.email,
+        },
+      });
 
       return NextResponse.json({
         success: true,
-        orderId: generatedOrderId,
-        amount: orderAmountInPaise,
-        currency: 'INR',
-        keyId,
+        orderId: rzpOrder.id,
+        amount: rzpOrder.amount, // in paise
+        currency: rzpOrder.currency,
+        keyId: process.env.RAZORPAY_KEY_ID, // Only public key ID is exposed to client
         businessName: 'Pure Picks Bengaluru',
-        description: 'Fresh Milk, Meat & Veg Delivery',
+        description: 'Farm Fresh Milk, Meat & Veg Delivery',
       });
     }
 
-    // 2. Verify Payment Signature
+    // =========================================================================
+    // ACTION 2: Verify Payment Cryptographic Signature (HMAC-SHA256)
+    // =========================================================================
     if (action === 'verify_payment') {
-      // In production with real Razorpay credentials:
-      // const hmac = crypto.createHmac('sha256', keySecret);
-      // hmac.update(razorpay_order_id + '|' + razorpay_payment_id);
-      // const generatedSignature = hmac.digest('hex');
-      // const isValid = generatedSignature === razorpay_signature;
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return NextResponse.json(
+          {
+            success: false,
+            verified: false,
+            message: 'Missing mandatory payment verification parameters (orderId, paymentId, or signature).',
+          },
+          { status: 400 }
+        );
+      }
 
-      // Allow verified payment confirmation
+      // Requirement 12: Prevent duplicate payment processing
+      const existingOrder = await prisma.order.findFirst({
+        where: { razorpayPaymentId: razorpay_payment_id.trim() },
+      });
+
+      if (existingOrder) {
+        return NextResponse.json(
+          {
+            success: false,
+            verified: false,
+            message: 'This payment transaction has already been processed and claimed.',
+          },
+          { status: 409 }
+        );
+      }
+
+      // Requirement 5 & 6: Timing-safe HMAC-SHA256 signature verification
+      const isValid = verifyRazorpayPaymentSignature({
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      });
+
+      if (!isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            verified: false,
+            message: 'Cryptographic payment verification failed: Invalid HMAC-SHA256 signature.',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verify payment details with Razorpay API if live client is active
+      if (isRazorpayConfigured()) {
+        try {
+          const razorpay = getRazorpayClient();
+          const payment = await razorpay.payments.fetch(razorpay_payment_id);
+
+          // Requirement 7: Verify payment belongs to expected order
+          if (payment.order_id !== razorpay_order_id) {
+            return NextResponse.json(
+              {
+                success: false,
+                verified: false,
+                message: 'Security mismatch: Payment does not belong to the expected Razorpay order.',
+              },
+              { status: 400 }
+            );
+          }
+
+          // Requirement 10: Handle failed or non-captured payments
+          if (payment.status === 'failed') {
+            return NextResponse.json(
+              {
+                success: false,
+                verified: false,
+                message: `Payment failed with reason: ${payment.error_description || 'Transaction declined by bank.'}`,
+              },
+              { status: 400 }
+            );
+          }
+        } catch (fetchErr: any) {
+          // If offline or test mode without remote fetch, signature validity is the cryptographic proof
+          console.warn('Razorpay payment fetch note:', fetchErr.message);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         verified: true,
-        paymentId: razorpay_payment_id || `pay_${Date.now()}`,
-        message: 'Payment verified successfully on Pure Picks secure gateway!',
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        message: 'Payment verified successfully via authentic HMAC-SHA256 signature.',
       });
     }
 
-    return NextResponse.json({ success: false, message: 'Invalid action' }, { status: 400 });
+    return NextResponse.json({ success: false, message: 'Invalid payment action.' }, { status: 400 });
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error('Razorpay API error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Payment processing error.' },
+      { status: 500 }
+    );
   }
 }

@@ -78,6 +78,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const parsedBasePrice = parseFloat(basePrice);
+    if (!Number.isFinite(parsedBasePrice) || parsedBasePrice <= 0) {
+      return NextResponse.json(
+        { success: false, message: 'Base price must be a positive number greater than 0.' },
+        { status: 400 }
+      );
+    }
+
+    const parsedStock = stockQuantity !== undefined ? parseFloat(stockQuantity) : 50;
+    if (!Number.isFinite(parsedStock) || parsedStock < 0) {
+      return NextResponse.json(
+        { success: false, message: 'Stock quantity must be a non-negative number.' },
+        { status: 400 }
+      );
+    }
+
     // Auto generate unique slug
     let baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     let slug = baseSlug;
@@ -106,9 +122,9 @@ export async function POST(req: NextRequest) {
         categoryId,
         image: image.trim(),
         badge: badge ? badge.trim() : null,
-        basePrice: parseFloat(basePrice),
+        basePrice: parsedBasePrice,
         unit: unit || 'kg',
-        stockQuantity: parseFloat(stockQuantity || 50),
+        stockQuantity: parsedStock,
         isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : true,
         isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : false,
         optionsJson: finalOptionsJson,

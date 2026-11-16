@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ShoppingCart, Zap, Check, Scissors, Weight, Sparkles } from 'lucide-react';
 import { Product } from '@/lib/types';
 import { useCart, calculateMultiplier } from '@/context/CartContext';
+import { calculateItemUnitPrice } from '@/lib/pricing';
 import { useAuth } from '@/context/AuthContext';
 
 interface ProductCardProps {
@@ -33,8 +34,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isAddedAnimation, setIsAddedAnimation] = useState(false);
 
   // Compute live price
-  const multiplier = calculateMultiplier(selectedWeight);
-  const unitCalculatedPrice = Math.round(product.basePrice * multiplier * 100) / 100;
+  const multiplier = calculateMultiplier(selectedWeight, product.unit, product.optionsJson);
+  const unitCalculatedPrice = calculateItemUnitPrice(product.basePrice, selectedWeight, product.unit, product.optionsJson);
   const totalItemPrice = Math.round(unitCalculatedPrice * quantity * 100) / 100;
 
   // Strikethrough comparative retail price (approx 12-15% higher)
